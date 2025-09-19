@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENIGI - AI Prompt Enhancer</title>
+    <style>
+        /* --- Fonts and Global Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-dark: #121212;
+            --bg-light: #1e1e1e;
+            --primary-accent: #6a5acd; /* Slate Blue */
+            --primary-hover: #5a4bbf;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --border-color: #333333;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --border-radius: 16px;
+            --font-family: 'Manrope', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 3rem;
+            background-image: radial-gradient(circle at 10% 20%, rgba(106, 90, 205, 0.1), transparent 30%),
+                              radial-gradient(circle at 90% 80%, rgba(106, 90, 205, 0.1), transparent 30%);
+        }
+
+        /* --- Main Container --- */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            background: var(--bg-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        header .logo {
+            background: linear-gradient(45deg, var(--primary-accent), var(--primary-hover));
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 800;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        header .title-group h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        header .title-group p {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* --- Main Content Area --- */
+        main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            padding: 2.5rem;
+            flex-grow: 1;
+        }
+
+        .input-section, .output-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* --- Text Areas --- */
+        .textarea-wrapper {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        textarea, #output-prompt {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: var(--font-family);
+            font-size: 1rem;
+            color: var(--text-primary);
+            resize: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 4px rgba(106, 90, 205, 0.3);
+        }
+        
+        #output-prompt {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        #output-prompt.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #output-prompt.error {
+            color: var(--error-color);
+        }
+
+        /* --- Loading Spinner --- */
+        .spinner-container {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 10;
+        }
+        .spinner-container.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Button and Actions --- */
+        .actions {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #enhance-button {
+            background: linear-gradient(45deg, var(--primary-accent), var(--primary-hover));
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        #enhance-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(106, 90, 205, 0.4);
+        }
+        
+        #enhance-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #enhance-button:disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #copy-button {
+            background: var(--border-color);
+            color: var(--text-primary);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        #copy-button.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        #copy-button:hover {
+            background: #444;
+        }
+        
+        #copy-button.copied {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 900px) {
+            body { padding: 1.5rem; }
+            main {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+                padding: 1.5rem;
+            }
+            textarea, #output-prompt { min-height: 300px; }
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            header { padding: 1rem 1.5rem; }
+            header .title-group h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo">E</div>
+            <div class="title-group">
+                <h1>ENIGI</h1>
+                <p>Energize Your Prompts</p>
+            </div>
+        </header>
+        <main>
+            <div class="input-section">
+                <h2>Your Idea</h2>
+                <div class="textarea-wrapper">
+                    <textarea id="input-prompt" placeholder="e.g., A fantasy story about a librarian who finds a book that writes itself..."></textarea>
+                </div>
+                <div class="actions">
+                    <button id="enhance-button">
+                        <!-- Content will be managed by JavaScript -->
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Engineered Prompt</h2>
+                    <button id="copy-button">Copy</button>
+                </div>
+                <div class="textarea-wrapper">
+                    <div id="output-prompt"></div>
+                    <div class="spinner-container" id="spinner">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+        // --- Configuration ---
+        //
+        // ##################################################################
+        // # IMPORTANT: PASTE YOUR GOOGLE AI STUDIO API KEY HERE            #
+        // ##################################################################
+        const API_KEY = "AIzaSyAozA-TEQoM6d8C-2o_tj8Y-lHXBJElxEM"; 
+        
+        // --- DOM Elements ---
+        const inputPromptEl = document.getElementById("input-prompt");
+        const outputPromptEl = document.getElementById("output-prompt");
+        const enhanceButton = document.getElementById("enhance-button");
+        const copyButton = document.getElementById("copy-button");
+        const spinner = document.getElementById("spinner");
+        
+        const COOLDOWN_SECONDS = 3;
+        const originalButtonHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
+            </svg>
+            <span>Energize</span>`;
+
+        let genAI;
+        let model;
+
+        function initializeApp() {
+            enhanceButton.innerHTML = originalButtonHTML;
+            if (API_KEY === "YOUR_GOOGLE_AI_API_KEY" || !API_KEY) {
+                showError("API Key Missing. Please add your Google AI Studio API key in the index.html file.");
+                enhanceButton.disabled = true;
+                return;
+            }
+            try {
+                genAI = new GoogleGenerativeAI(API_KEY);
+                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            } catch (error) {
+                console.error("Initialization Error:", error);
+                showError("Initialization Failed. Your API Key might be invalid. Please check it and reload.");
+                enhanceButton.disabled = true;
+            }
+        }
+
+        async function enhancePrompt() {
+            if (!model) return;
+
+            const userInput = inputPromptEl.value;
+            if (!userInput.trim()) {
+                alert("Please enter an idea to energize.");
+                return;
+            }
+            
+            setLoadingState(true);
+            
+            const metaPrompt = `You are an elite AI prompt engineer known as "The Architect." Your sole purpose is to transform a user's simple idea into a comprehensive, structured, and powerful prompt for a generative AI. Your output must be clear, detailed, and follow best practices to elicit the highest quality response. **Prompt Engineering Blueprint:** 1. **ROLE & GOAL:** Start with a clear "You are a..." or "Act as a..." statement to define the AI's persona. Immediately follow with the primary goal of the task. 2. **CONTEXT:** Provide essential background information, setting the scene for the task. 3. **DETAILED INSTRUCTIONS:** Create a list of specific, actionable steps the AI must follow. Use strong action verbs. 4. **CONSTRAINTS & SPECIFICATIONS:** Define the rules. This includes tone (e.g., professional, witty, academic), format (e.g., markdown, JSON), length, and what to avoid (using positive framing like "Ensure the tone is formal" instead of "Don't be casual"). 5. **EXAMPLE (if applicable):** Provide a concise example of the desired output format or style to guide the AI (few-shot prompting). --- **User's Original Idea:** "${userInput}" --- **Your Architect-Level Engineered Prompt:**`;
+
+            try {
+                const result = await model.generateContent(metaPrompt);
+                const response = result.response;
+                showResult(response.text().trim());
+            } catch (error) {
+                console.error("Error calling the Gemini API:", error);
+                let errorMessage = "An unexpected error occurred. Please try again.\n\n";
+                if (error.message && error.message.includes('API key not valid')) {
+                    errorMessage = "Error: Your API key is not valid. Please ensure you have a valid key from Google AI Studio and that it is enabled.";
+                } else if (error.toString().includes('fetch') || error.message.includes('429')) {
+                    errorMessage = "Error: The request to Google's servers failed.\n\nThis can happen if you send requests too quickly (rate limiting) or have a network issue.\n\nPlease wait a moment and try again.";
+                }
+                showError(errorMessage);
+            } finally {
+                setLoadingState(false);
+                startCooldown();
+            }
+        }
+        
+        // --- UI Helper Functions ---
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                enhanceButton.disabled = true;
+                enhanceButton.innerHTML = `<span>Energizing...</span>`;
+                spinner.classList.add('visible');
+                outputPromptEl.classList.remove('visible', 'error');
+                copyButton.classList.remove('visible');
+            } else {
+                spinner.classList.remove('visible');
+            }
+        }
+        
+        function startCooldown() {
+            let secondsLeft = COOLDOWN_SECONDS;
+            enhanceButton.innerHTML = `<span>Wait (${secondsLeft}s)</span>`;
+            const interval = setInterval(() => {
+                secondsLeft--;
+                enhanceButton.innerHTML = `<span>Wait (${secondsLeft}s)</span>`;
+                if (secondsLeft <= 0) {
+                    clearInterval(interval);
+                    enhanceButton.disabled = false;
+                    enhanceButton.innerHTML = originalButtonHTML;
+                }
+            }, 1000);
+        }
+
+        function showResult(text) {
+            outputPromptEl.textContent = text;
+            outputPromptEl.classList.add('visible');
+            outputPromptEl.classList.remove('error');
+            copyButton.classList.add('visible');
+        }
+
+        function showError(text) {
+            outputPromptEl.textContent = text;
+            outputPromptEl.classList.add('visible', 'error');
+            copyButton.classList.remove('visible');
+        }
+        
+        function copyToClipboard() {
+            if (!outputPromptEl.textContent || outputPromptEl.classList.contains('error')) return;
+            navigator.clipboard.writeText(outputPromptEl.textContent).then(() => {
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // --- Event Listeners ---
+        enhanceButton.addEventListener("click", enhancePrompt);
+        copyButton.addEventListener("click", copyToClipboard);
+        
+        // --- Initialize App ---
+        initializeApp();
+
+    </script>
+</body>
+</html>
