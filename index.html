@@ -1,456 +1,559 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-site-verification" content="m4dXJNTMvJzkWubiimWVwBnqsnRtLRawpt9u3dLPyek" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENIGI - AI Prompt Enhancer</title>
+    <title>Enigi: AI Prompt Engineer Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* --- Fonts and Global Styles --- */
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-
         :root {
-            --bg-dark: #121212;
-            --bg-light: #1e1e1e;
-            --primary-accent: #6a5acd; /* Slate Blue */
-            --primary-hover: #5a4bbf;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --border-color: #333333;
-            --success-color: #4caf50;
-            --error-color: #f44336;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            --border-radius: 16px;
-            --font-family: 'Manrope', sans-serif;
+            /* Upgraded Color Palette: Electric Blue Accent */
+            --primary-bg: #12121e; /* Darker, deep background */
+            --secondary-bg: #1e1e2d; /* UI card background */
+            --card-bg: #2a2a3a; /* Input fields & output background */
+            --accent-color: #00aaff; /* Vibrant Electric Blue */
+            --text-color: #e0e0f0;
+            --secondary-text: #a0a0c0;
+            --border-color: #3f3f5a;
+            --shadow-color: rgba(0, 0, 0, 0.6);
+            --accent-glow: rgba(0, 170, 255, 0.3);
+            --success-color: #38b44a;
+            --error-color: #ff5757;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: var(--font-family);
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
             min-height: 100vh;
-            padding: 3rem;
-            background-image: radial-gradient(circle at 10% 20%, rgba(106, 90, 205, 0.1), transparent 30%),
-                              radial-gradient(circle at 90% 80%, rgba(106, 90, 205, 0.1), transparent 30%);
-        }
-
-        /* --- Main Container --- */
-        .container {
-            width: 100%;
-            max-width: 1400px;
-            background: var(--bg-light);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            scroll-behavior: smooth;
         }
 
-        /* --- Header --- */
         header {
-            padding: 1.5rem 2.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        header .logo {
-            background: linear-gradient(45deg, var(--primary-accent), var(--primary-hover));
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 800;
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        header .title-group h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        header .title-group p {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        /* --- Main Content Area --- */
-        main {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2.5rem;
-            padding: 2.5rem;
-            flex-grow: 1;
-        }
-
-        .input-section, .output-section {
-            display: flex;
-            flex-direction: column;
-        }
-
-        h2 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        /* --- Text Areas --- */
-        .textarea-wrapper {
-            flex-grow: 1;
-            position: relative;
-        }
-
-        textarea, #output-prompt {
-            width: 100%;
-            height: 100%;
-            min-height: 400px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            font-family: var(--font-family);
-            font-size: 1rem;
-            color: var(--text-primary);
-            resize: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary-accent);
-            box-shadow: 0 0 0 4px rgba(106, 90, 205, 0.3);
-        }
-        
-        #output-prompt {
-            white-space: pre-wrap;
-            overflow-wrap: break-word;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        #output-prompt.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        #output-prompt.error {
-            color: var(--error-color);
-        }
-
-        /* --- Loading Spinner --- */
-        .spinner-container {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(30, 30, 30, 0.5);
-            border-radius: 12px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-            z-index: 10;
-        }
-        .spinner-container.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border-color);
-            border-top-color: var(--primary-accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* --- Button and Actions --- */
-        .actions {
-            margin-top: 1.5rem;
+            background-color: var(--secondary-bg);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 0 20px var(--shadow-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid var(--accent-color);
+            z-index: 100;
+            position: sticky;
+            top: 0;
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 15px var(--accent-glow);
+            letter-spacing: 2px;
+            transition: text-shadow 0.3s ease;
+        }
+        .logo:hover {
+            text-shadow: 0 0 20px var(--accent-color);
         }
         
-        #enhance-button {
-            background: linear-gradient(45deg, var(--primary-accent), var(--primary-hover));
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 10px;
+        .tagline {
             font-size: 1rem;
+            color: var(--secondary-text);
+            font-weight: 300;
+            margin-left: 15px;
+        }
+
+        .container {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr; /* More space for output */
+            gap: 2.5rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 2.5rem auto;
+            align-items: start;
+        }
+
+        .card {
+            background-color: var(--secondary-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px var(--shadow-color), 0 0 10px rgba(0, 170, 255, 0.1);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 50px var(--shadow-color), 0 0 20px rgba(0, 170, 255, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            text-align: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 1rem;
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+        }
+
+        .prompt-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            padding: 1.2rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            width: 100%;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            min-width: 150px;
             justify-content: center;
+            gap: 0.75rem;
         }
 
-        #enhance-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(106, 90, 205, 0.4);
-        }
-        
-        #enhance-button:active:not(:disabled) {
-            transform: translateY(0);
+        button:hover {
+            background-color: #0088cc;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px var(--accent-glow);
         }
 
-        #enhance-button:disabled {
-            background: #555;
-            color: #999;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--primary-bg);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #response-output {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 1.8rem;
+            min-height: 500px;
+            max-height: 750px;
+            overflow-y: auto;
+            font-family: 'Roboto Mono', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
         }
         
-        #copy-button {
-            background: var(--border-color);
-            color: var(--text-primary);
-            border: none;
-            padding: 0.6rem 1.2rem;
+        #response-output.loading {
+            filter: blur(3px);
+            opacity: 0.5;
+            cursor: progress;
+        }
+
+        /* History styling is kept minimal but functional */
+        #prompt-history {
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .history-item {
+            /* ... history styling from previous version ... */
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--accent-color);
             border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
             cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            position: relative;
         }
         
-        #copy-button.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        #copy-button:hover {
-            background: #444;
-        }
-        
-        #copy-button.copied {
-            background-color: var(--success-color);
-            color: white;
+        .history-item:hover {
+            background-color: #242434; /* Slightly lighter on hover */
+            transform: scale(1.01);
         }
 
-        /* --- Responsive Design --- */
-        @media (max-width: 900px) {
-            body { padding: 1.5rem; }
-            main {
+        /* Message styling */
+        .message {
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            display: none;
+        }
+        .message.success {
+            background-color: rgba(56, 180, 74, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+        .message.error {
+            background-color: rgba(255, 87, 87, 0.2);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 1024px) {
+            .container {
                 grid-template-columns: 1fr;
-                gap: 2.5rem;
+                gap: 2rem;
+            }
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .prompt-input-section {
+                order: 2; /* Push input to the bottom on mobile to see output first */
+            }
+            .response-output-section {
+                order: 1;
+            }
+            .card {
                 padding: 1.5rem;
             }
-            textarea, #output-prompt { min-height: 300px; }
         }
-        
-        @media (max-width: 600px) {
-            body { padding: 1rem; }
-            header { padding: 1rem 1.5rem; }
-            header .title-group h1 { font-size: 1.5rem; }
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 1.8rem;
+            }
+            .tagline {
+                font-size: 0.8rem;
+                margin: 0;
+            }
+            .prompt-options {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-    
 <body>
+    <header>
+        <div style="display: flex; align-items: center;">
+            <div class="logo">Enigi</div>
+            <span class="tagline">// AI Prompt Engineer Studio</span>
+        </div>
+    </header>
 
-    <div class="container">
-        <header>
-            <div class="logo">E</div>
-            <div class="title-group">
-                <h1>ENIGI</h1>
-                <p>Energize Your Prompts</p>
-            </div>
-        </header>
-        <main>
-            <div class="input-section">
-                <h2>Your Idea</h2>
-                <div class="textarea-wrapper">
-                    <textarea id="input-prompt" placeholder="e.g., A fantasy story about a librarian who finds a book that writes itself..."></textarea>
+    <main class="container">
+        <!-- LEFT: Control Panel (Input and Parameters) -->
+        <section class="prompt-input-section">
+            <div class="card">
+                <h2>Control Panel</h2>
+                
+                <div class="form-group">
+                    <label for="system-instruction">System Instruction (AI Role/Persona):</label>
+                    <textarea id="system-instruction" rows="4" placeholder="e.g., You are a senior Python developer. Your responses must be in Markdown and include code blocks."></textarea>
                 </div>
-                <div class="actions">
-                    <button id="enhance-button">
-                        <!-- Content will be managed by JavaScript -->
-                    </button>
-                </div>
-            </div>
 
-            <div class="output-section">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2>Engineered Prompt</h2>
-                    <button id="copy-button">Copy</button>
+                <div class="form-group">
+                    <label for="prompt-text">User Prompt (The Query):</label>
+                    <textarea id="prompt-text" rows="8" placeholder="Enter your specific question, request, or data here..."></textarea>
                 </div>
-                <div class="textarea-wrapper">
-                    <div id="output-prompt"></div>
-                    <div class="spinner-container" id="spinner">
-                        <div class="spinner"></div>
+                
+                <div class="prompt-options">
+                    <div class="form-group">
+                        <label for="temperature">Creativity (Temperature: 0.0-1.0):</label>
+                        <input type="number" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                    <div class="form-group">
+                        <label for="max-tokens">Max Output Tokens:</label>
+                        <input type="number" id="max-tokens" min="1" max="8192" step="1" value="500">
                     </div>
                 </div>
+
+                <button id="generate-button">
+                    <span id="button-text">Execute Prompt</span>
+                    <div class="loading-spinner" id="spinner"></div>
+                </button>
+                <div id="message-area" class="message"></div>
             </div>
-        </main>
-    </div>
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+            <div class="card" style="margin-top: 2rem;">
+                <h2>Prompt History</h2>
+                <div id="prompt-history">
+                    <p style="text-align: center; color: var(--secondary-text); font-style: italic;">No history yet. Execute your first prompt!</p>
+                </div>
+            </div>
+        </section>
 
-        // --- Configuration ---
-        //
-        // ##################################################################
-        // # IMPORTANT: PASTE YOUR GOOGLE AI STUDIO API KEY HERE            #
-        // ##################################################################
-        const API_KEY = "AIzaSyAozA-TEQoM6d8C-2o_tj8Y-lHXBJElxEM"; 
+        <!-- RIGHT: Response Output -->
+        <section class="response-output-section">
+            <div class="card" style="padding: 1.5rem;">
+                <h2>AI Response Console</h2>
+                <pre id="response-output">Welcome to Enigi!
+1. Define the AI's Role (System Instruction).
+2. Write your Query (User Prompt).
+3. Adjust Parameters for control.
+4. Click 'Execute Prompt' to test your engineering!
+The generated response will appear here.
+</pre>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Enigi. Engineered for the future of AI.</p>
+    </footer>
+
+    <script>
+        // Configuration for Google AI Studio API
+        const API_KEY = 'AIzaSyAcIwg-Y5hrjjGphow5Qs-lk9Xz43oGnFE'; // <<<=== REPLACE WITH YOUR ACTUAL API KEY
         
-        // --- DOM Elements ---
-        const inputPromptEl = document.getElementById("input-prompt");
-        const outputPromptEl = document.getElementById("output-prompt");
-        const enhanceButton = document.getElementById("enhance-button");
-        const copyButton = document.getElementById("copy-button");
-        const spinner = document.getElementById("spinner");
-        
-        const COOLDOWN_SECONDS = 3;
-        const originalButtonHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
-            </svg>
-            <span>Energize</span>`;
+        // Using the recommended, stable, and fast model
+        const MODEL_NAME = 'gemini-2.5-flash'; 
 
-        let genAI;
-        let model;
+        // Get DOM elements
+        const systemInstructionInput = document.getElementById('system-instruction');
+        const promptTextInput = document.getElementById('prompt-text');
+        const temperatureInput = document.getElementById('temperature');
+        const maxTokensInput = document.getElementById('max-tokens');
+        const generateButton = document.getElementById('generate-button');
+        const buttonText = document.getElementById('button-text');
+        const spinner = document.getElementById('spinner');
+        const responseOutput = document.getElementById('response-output');
+        const promptHistory = document.getElementById('prompt-history');
+        const messageArea = document.getElementById('message-area');
 
-        function initializeApp() {
-            enhanceButton.innerHTML = originalButtonHTML;
-            if (API_KEY === "YOUR_GOOGLE_AI_API_KEY" || !API_KEY) {
-                showError("API Key Missing. Please add your Google AI Studio API key in the index.html file.");
-                enhanceButton.disabled = true;
-                return;
-            }
-            try {
-                genAI = new GoogleGenerativeAI(API_KEY);
-                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            } catch (error) {
-                console.error("Initialization Error:", error);
-                showError("Initialization Failed. Your API Key might be invalid. Please check it and reload.");
-                enhanceButton.disabled = true;
-            }
-        }
+        // Initialize history from localStorage
+        let history = JSON.parse(localStorage.getItem('enigi_prompt_history')) || [];
+        renderHistory();
 
-        async function enhancePrompt() {
-            if (!model) return;
+        generateButton.addEventListener('click', generateResponse);
 
-            const userInput = inputPromptEl.value;
-            if (!userInput.trim()) {
-                alert("Please enter an idea to energize.");
-                return;
-            }
+        async function generateResponse() {
+            const systemInstruction = systemInstructionInput.value.trim();
+            const userPrompt = promptTextInput.value.trim();
+            const temperature = parseFloat(temperatureInput.value);
+            const maxTokens = parseInt(maxTokensInput.value);
             
+            // For a single-turn generateContent REST call, we'll combine the system instruction 
+            // and user prompt into a single, enhanced prompt.
+            const fullPrompt = systemInstruction ? 
+                `**System Instruction:** ${systemInstruction}\n\n**User Prompt:** ${userPrompt}` : 
+                userPrompt;
+
+            if (!userPrompt) {
+                showMessage('The User Prompt field is required!', 'error');
+                return;
+            }
+
+            if (!API_KEY || API_KEY === 'YOUR_GOOGLE_AI_STUDIO_API_KEY') {
+                showMessage('Please replace "YOUR_GOOGLE_AI_STUDIO_API_KEY" with your actual API key.', 'error');
+                return;
+            }
+
             setLoadingState(true);
+            hideMessage();
             
-            const metaPrompt = `You are an elite AI prompt engineer known as "The Architect." Your sole purpose is to transform a user's simple idea into a comprehensive, structured, and powerful prompt for a generative AI. Your output must be clear, detailed, and follow best practices to elicit the highest quality response. **Prompt Engineering Blueprint:** 1. **ROLE & GOAL:** Start with a clear "You are a..." or "Act as a..." statement to define the AI's persona. Immediately follow with the primary goal of the task. 2. **CONTEXT:** Provide essential background information, setting the scene for the task. 3. **DETAILED INSTRUCTIONS:** Create a list of specific, actionable steps the AI must follow. Use strong action verbs. 4. **CONSTRAINTS & SPECIFICATIONS:** Define the rules. This includes tone (e.g., professional, witty, academic), format (e.g., markdown, JSON), length, and what to avoid (using positive framing like "Ensure the tone is formal" instead of "Don't be casual"). 5. **EXAMPLE (if applicable):** Provide a concise example of the desired output format or style to guide the AI (few-shot prompting). --- **User's Original Idea:** "${userInput}" --- **Your Architect-Level Engineered Prompt:**`;
+            const currentApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
 
             try {
-                const result = await model.generateContent(metaPrompt);
-                const response = result.response;
-                showResult(response.text().trim());
-            } catch (error) {
-                console.error("Error calling the Gemini API:", error);
-                let errorMessage = "An unexpected error occurred. Please try again.\n\n";
-                if (error.message && error.message.includes('API key not valid')) {
-                    errorMessage = "Error: Your API key is not valid. Please ensure you have a valid key from Google AI Studio and that it is enabled.";
-                } else if (error.toString().includes('fetch') || error.message.includes('429')) {
-                    errorMessage = "Error: The request to Google's servers failed.\n\nThis can happen if you send requests too quickly (rate limiting) or have a network issue.\n\nPlease wait a moment and try again.";
+                // --- API Integration ---
+                const response = await fetch(currentApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: fullPrompt // Send the combined prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: temperature,
+                            maxOutputTokens: maxTokens,
+                        },
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${errorData.error.message || response.statusText}`);
                 }
-                showError(errorMessage);
+
+                const data = await response.json();
+                
+                // Robust check for empty/blocked candidates (FIX from previous steps)
+                if (!data.candidates || data.candidates.length === 0) {
+                    const blockReason = data.promptFeedback && data.promptFeedback.blockReason ? data.promptFeedback.blockReason : 'Unknown reason (possibly safety filters, rate limits, or an internal error).';
+                    throw new Error(`AI generation blocked or empty response. Reason: ${blockReason}`);
+                }
+                
+                const aiResponse = data.candidates[0].content?.parts[0]?.text;
+
+                if (aiResponse) {
+                    responseOutput.textContent = aiResponse;
+                    addHistoryItem(fullPrompt, aiResponse, systemInstruction, userPrompt);
+                    showMessage('Response generated successfully!', 'success');
+                } else {
+                    responseOutput.textContent = "Response was empty or invalid. The model returned a candidate, but the text content was missing.";
+                    showMessage('Response content missing.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error executing prompt:', error);
+                responseOutput.textContent = `Execution Error: ${error.message}. Please check your API key, network connection, or prompt.`;
+                showMessage(`Error: ${error.message}`, 'error');
             } finally {
                 setLoadingState(false);
-                startCooldown();
             }
         }
-        
-        // --- UI Helper Functions ---
+
         function setLoadingState(isLoading) {
-            if (isLoading) {
-                enhanceButton.disabled = true;
-                enhanceButton.innerHTML = `<span>Energizing...</span>`;
-                spinner.classList.add('visible');
-                outputPromptEl.classList.remove('visible', 'error');
-                copyButton.classList.remove('visible');
-            } else {
-                spinner.classList.remove('visible');
+            generateButton.disabled = isLoading;
+            spinner.style.display = isLoading ? 'inline-block' : 'none';
+            buttonText.textContent = isLoading ? 'Executing...' : 'Execute Prompt';
+            responseOutput.classList.toggle('loading', isLoading);
+        }
+
+        function showMessage(text, type) {
+            messageArea.textContent = text;
+            messageArea.className = `message ${type}`;
+            messageArea.style.display = 'block';
+            setTimeout(() => {
+                hideMessage();
+            }, 5000); 
+        }
+
+        function hideMessage() {
+            messageArea.style.display = 'none';
+        }
+
+        function addHistoryItem(fullPrompt, response, systemInstruction, userPrompt) {
+            const newItem = {
+                id: Date.now(),
+                system: systemInstruction,
+                userPrompt: userPrompt,
+                fullPrompt: fullPrompt,
+                response: response,
+                timestamp: new Date().toLocaleString()
+            };
+            history.unshift(newItem);
+            if (history.length > 20) {
+                history.pop();
             }
-        }
-        
-        function startCooldown() {
-            let secondsLeft = COOLDOWN_SECONDS;
-            enhanceButton.innerHTML = `<span>Wait (${secondsLeft}s)</span>`;
-            const interval = setInterval(() => {
-                secondsLeft--;
-                enhanceButton.innerHTML = `<span>Wait (${secondsLeft}s)</span>`;
-                if (secondsLeft <= 0) {
-                    clearInterval(interval);
-                    enhanceButton.disabled = false;
-                    enhanceButton.innerHTML = originalButtonHTML;
-                }
-            }, 1000);
+            localStorage.setItem('enigi_prompt_history', JSON.stringify(history));
+            renderHistory();
         }
 
-        function showResult(text) {
-            outputPromptEl.textContent = text;
-            outputPromptEl.classList.add('visible');
-            outputPromptEl.classList.remove('error');
-            copyButton.classList.add('visible');
+        function renderHistory() {
+            promptHistory.innerHTML = '';
+            if (history.length === 0) {
+                promptHistory.innerHTML = '<p style="text-align: center; color: var(--secondary-text); font-style: italic;">No history yet. Execute your first prompt!</p>';
+                return;
+            }
+
+            history.forEach(item => {
+                const historyItemDiv = document.createElement('div');
+                historyItemDiv.className = 'history-item';
+                
+                // Display the shorter User Prompt and System Instruction
+                const systemDisplay = item.system ? `System: ${item.system.substring(0, 50)}...` : 'No System Role';
+                const userDisplay = item.userPrompt.substring(0, 80) + (item.userPrompt.length > 80 ? '...' : '');
+
+                historyItemDiv.innerHTML = `
+                    <p style="color: var(--accent-color); font-size:0.85rem;">${systemDisplay}</p>
+                    <p><strong>Query:</strong> ${userDisplay}</p>
+                    <span class="timestamp">${item.timestamp}</span>
+                    <button class="copy-btn" data-id="${item.id}">Copy</button>
+                `;
+                historyItemDiv.addEventListener('click', () => loadHistoryItem(item));
+                promptHistory.appendChild(historyItemDiv);
+            });
+            attachCopyListeners();
         }
 
-        function showError(text) {
-            outputPromptEl.textContent = text;
-            outputPromptEl.classList.add('visible', 'error');
-            copyButton.classList.remove('visible');
+        function loadHistoryItem(item) {
+            systemInstructionInput.value = item.system;
+            promptTextInput.value = item.userPrompt;
+            responseOutput.textContent = item.response;
+            showMessage('History item loaded!', 'success');
+            systemInstructionInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        
-        function copyToClipboard() {
-            if (!outputPromptEl.textContent || outputPromptEl.classList.contains('error')) return;
-            navigator.clipboard.writeText(outputPromptEl.textContent).then(() => {
-                copyButton.textContent = 'Copied!';
-                copyButton.classList.add('copied');
-                setTimeout(() => {
-                    copyButton.textContent = 'Copy';
-                    copyButton.classList.remove('copied');
-                }, 2000);
+
+        function attachCopyListeners() {
+            document.querySelectorAll('.history-item .copy-btn').forEach(button => {
+                button.onclick = (event) => {
+                    event.stopPropagation(); 
+                    const itemId = parseInt(button.dataset.id);
+                    const item = history.find(h => h.id === itemId);
+                    if (item) {
+                        navigator.clipboard.writeText(item.response)
+                            .then(() => {
+                                const originalText = button.textContent;
+                                button.textContent = 'COPIED!';
+                                setTimeout(() => {
+                                    button.textContent = originalText;
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy text: ', err);
+                            });
+                    }
+                };
             });
         }
-
-        // --- Event Listeners ---
-        enhanceButton.addEventListener("click", enhancePrompt);
-        copyButton.addEventListener("click", copyToClipboard);
-        
-        // --- Initialize App ---
-        initializeApp();
-
     </script>
-    <script type='text/javascript' src='//pl27679625.revenuecpmgate.com/98/c9/09/98c909dd9bddb7fc3c4f7593a09f2471.js'></script>
 </body>
 </html>
